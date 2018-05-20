@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
-using System.Runtime.Serialization.Json;
 using System.Text;
 using System.Threading.Tasks;
 using ZFJImporter.Common.Model;
@@ -22,20 +20,30 @@ namespace ZFJImporter.Common
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Basic", Convert.ToBase64String(Encoding.ASCII.GetBytes($"{username}:{password}")));
         }
 
-        public async Task<IEnumerable<Project>> GetProjects()
+        public async Task<IEnumerable<Project>> GetProjectsAsync()
         {
-            var serializer = new DataContractJsonSerializer(typeof(IEnumerable<Project>));
-            var stream = await client.GetStreamAsync("/rest/api/latest/project");
+            string requestUri = "/rest/api/latest/project";
 
-            return (serializer.ReadObject(stream) as IEnumerable<Project>).ToList();
+            return await GetAsAsync<IEnumerable<Project>>(requestUri);
         }
 
-        public async Task<IEnumerable<Issue>> GetProjectIssues(int projectId)
+        public async Task<IEnumerable<Issue>> GetProjectIssuesAsync(int projectId)
         {
-            var serializer = new DataContractJsonSerializer(typeof(IEnumerable<Issue>));
-            var stream = await client.GetStreamAsync($"rest/api/latest/issue/createmeta?projectIds={projectId}&expand=projects.issuetypes.fields");
+            string requestUri = $"rest/api/latest/issue/createmeta?projectIds={projectId}&expand=projects.issuetypes.fields";
 
-            return (serializer.ReadObject(stream) as IEnumerable<Issue>).ToList();
+            return await GetAsAsync<IEnumerable<Issue>>(requestUri);
+        }
+
+        private async Task<T> GetAsAsync<T>(string requestUri)
+        {
+            HttpResponseMessage response = await client.GetAsync(requestUri);
+
+            if (!response.IsSuccessStatusCode)
+            {
+                throw new HttpRequestException($"The HTTP request to '{requestUri}' failed with status '{response.StatusCode}'.");
+            }
+
+            return await response.Content.ReadAsAsync<T>();
         }
     }
 }

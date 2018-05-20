@@ -19,7 +19,7 @@ namespace ZFJImporter
 
             var service = new JiraService("server", "username", "password");
 
-            var projects = await service.GetProjects();
+            var projects = await service.GetProjectsAsync();
 
             foreach (var project in projects)
             {

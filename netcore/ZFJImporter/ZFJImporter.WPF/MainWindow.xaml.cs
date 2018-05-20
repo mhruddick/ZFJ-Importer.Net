@@ -1,18 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Configuration;
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
 using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
-using ZFJImporter.Common;
 
 namespace ZFJImporter.WPF
 {
@@ -21,9 +9,6 @@ namespace ZFJImporter.WPF
     /// </summary>
     public partial class MainWindow : Window
     {
-        private IJiraService service;
-
-
         public MainViewModel ViewModel
         {
             get { return (MainViewModel)DataContext; }
@@ -34,20 +19,30 @@ namespace ZFJImporter.WPF
         {
             InitializeComponent();
 
-            ViewModel = new MainViewModel();
+            KeyDown += OnKeyDown;
+
+            ViewModel = new MainViewModel(() => UserPasswordField.Password);
+
+            UserPasswordField.Password = ConfigurationManager.AppSettings["defaultPassword"];
         }
 
-        private void LoginButton_Click(object sender, RoutedEventArgs e)
+        private void OnKeyDown(object sender, KeyEventArgs e)
         {
-            service = new JiraService(ServerField.Text, UserNameField.Text, UserPasswordField.Password);
-            GetProjects();
+            ICommand loginCommand = ViewModel?.LoginCommand;
+
+            if (loginCommand == null) return;
+
+            if (e.Key == Key.Return &&
+                UserPasswordField.IsKeyboardFocused &&
+                loginCommand.CanExecute(null))
+            {
+                loginCommand.Execute(null);
+            }
         }
 
-        private async void GetProjects()
+        private void OnUserPasswordChanged(object sender, RoutedEventArgs e)
         {
-            var projects = await service.GetProjects();
-
-            ProjectsListView.ItemsSource = projects;
+            ViewModel?.RaiseCanLoginChanged();
         }
     }
 }

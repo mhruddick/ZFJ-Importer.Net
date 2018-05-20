@@ -6,7 +6,7 @@ namespace ZFJImporter.Common
 {
     public interface IJiraService
     {
-        Task<IEnumerable<Issue>> GetProjectIssues(int projectId);
-        Task<IEnumerable<Project>> GetProjects();
+        Task<IEnumerable<Issue>> GetProjectIssuesAsync(int projectId);
+        Task<IEnumerable<Project>> GetProjectsAsync();
     }
 }
