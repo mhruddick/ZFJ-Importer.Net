@@ -1,5 +1,8 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
@@ -27,11 +30,36 @@ namespace ZFJImporter.Common
             return await GetAsAsync<IEnumerable<Project>>(requestUri);
         }
 
-        public async Task<IEnumerable<Issue>> GetProjectIssuesAsync(int projectId)
+        public async Task<IEnumerable<IssueType>> GetProjectIssueTypesAsync(int projectId)
         {
             string requestUri = $"rest/api/latest/issue/createmeta?projectIds={projectId}&expand=projects.issuetypes.fields";
 
-            return await GetAsAsync<IEnumerable<Issue>>(requestUri);
+            var createMetaResponse = await GetAsAsync<IssueCreateMetaResult>(requestUri);
+
+            var issueTypes = createMetaResponse?.Projects?.SingleOrDefault()?.IssueTypes;
+
+            PopulateFields(issueTypes);
+
+            return issueTypes;
+        }
+
+        private void PopulateFields(IEnumerable<IssueType> issueTypes)
+        {
+            foreach (var issueType in issueTypes)
+            {
+                var fields = new List<Field>();
+
+                foreach (var kvp in issueType.RawJsonFields)
+                {
+                    var jsonString = kvp.Value.ToString();
+
+                    var field = JsonConvert.DeserializeObject<Field>(jsonString);
+                    field.Id = kvp.Key;
+                    fields.Add(field);
+                }
+
+                issueType.Fields = fields;
+            }
         }
 
         private async Task<T> GetAsAsync<T>(string requestUri)

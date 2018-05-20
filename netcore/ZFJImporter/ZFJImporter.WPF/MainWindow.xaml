@@ -5,9 +5,19 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d"
+    xmlns:local="clr-namespace:ZFJImporter.WPF"
     Title="ZFJ Importer"
     Height="600"
-    Width="800">
+    Width="800"
+    WindowStartupLocation="CenterScreen">
+
+    <Window.Resources>
+
+        <local:SelectedIndexToVisibilityConverter x:Key="SelectedIndexToVisibilityConverter" />
+        <local:NullToBooleanConverter x:Key="NullToFalseConverter" />
+        
+    </Window.Resources>
+    
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
@@ -25,47 +35,59 @@
         </Grid>
 
         <Grid Grid.Row="1" Margin="20,10">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition />
-                <ColumnDefinition />
-                <ColumnDefinition Width="Auto" />
-            </Grid.ColumnDefinitions>
-
-            <Grid>
+            <Grid Grid.Column="1">
+                <Grid.RowDefinitions>
+                    <RowDefinition />
+                    <RowDefinition Height="10" />
+                    <RowDefinition />
+                </Grid.RowDefinitions>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="66" />
                     <ColumnDefinition />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition />
+                    <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
 
                 <TextBlock Text="Username:" VerticalAlignment="Center" Margin="0,0,10,0" />
                 <TextBox Grid.Column="1" Text="{Binding Username, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" HorizontalAlignment="Stretch" Padding="4" />
+
+                <TextBlock Grid.Column="2" Text="Password:" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="20,0,10,0" />
+                <PasswordBox Grid.Column="3" x:Name="UserPasswordField" HorizontalAlignment="Stretch" Padding="4" PasswordChanged="OnUserPasswordChanged" />
+
+                <Button Grid.Column="4" Content="Login" VerticalAlignment="Stretch" Margin="20,0,0,0" MinWidth="80" Command="{Binding LoginCommand, Mode=OneTime}" />
+
+                <TextBlock Grid.Row="2" Text="Project:" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="0,0,10,0" />
+
+                <ComboBox x:Name="ProjectSelector" Grid.Row="2" Grid.Column="1" IsEnabled="{Binding Projects, Mode=OneWay, Converter={StaticResource NullToFalseConverter}}"
+                    SelectedValuePath="Id" SelectedValue="{Binding SelectedProjectId, Mode=TwoWay}" ItemsSource="{Binding Projects, Mode=OneWay}"
+                    DisplayMemberPath="Name" Padding="8,5" />
+
+                <TextBlock Grid.Row="2" Grid.Column="1" Text="Select a project" Padding="8,5" Opacity="0.5" IsHitTestVisible="False"
+                    Visibility="{Binding SelectedIndex, ElementName=ProjectSelector, Mode=OneWay, Converter={StaticResource SelectedIndexToVisibilityConverter}}" />
+
+
+                <TextBlock Grid.Row="2" Grid.Column="2" Text="Issue Type:" VerticalAlignment="Center" Margin="20,0,10,0" />
+
+                <ComboBox x:Name="IssueTypeSelector" Grid.Row="2" Grid.Column="3" IsEnabled="{Binding IssueTypes, Mode=OneWay, Converter={StaticResource NullToFalseConverter}}"
+                    SelectedValuePath="Id" SelectedValue="{Binding SelectedIssueTypeId, Mode=TwoWay}" ItemsSource="{Binding IssueTypes, Mode=OneWay}"
+                    DisplayMemberPath="Name" Padding="8,5" />
+
+                <TextBlock Grid.Row="2" Grid.Column="3" Text="Select an issue type" Padding="8,5" Opacity="0.5" IsHitTestVisible="False"
+                    Visibility="{Binding SelectedIndex, ElementName=IssueTypeSelector, Mode=OneWay, Converter={StaticResource SelectedIndexToVisibilityConverter}}" />
             </Grid>
-
-            <Grid Grid.Column="1">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="Auto" />
-                    <ColumnDefinition />
-                </Grid.ColumnDefinitions>
-
-                <TextBlock Text="Password:" VerticalAlignment="Center" Margin="20,0,10,0" />
-                <PasswordBox Grid.Column="1" x:Name="UserPasswordField" HorizontalAlignment="Stretch" Padding="4" PasswordChanged="OnUserPasswordChanged" />
-            </Grid>
-
-            <Button Grid.Column="2" Content="Login" VerticalAlignment="Stretch" Margin="20,0,0,0" MinWidth="80" Command="{Binding LoginCommand, Mode=OneTime}" />
         </Grid>
 
-        <ListView Grid.Row="2" Margin="20" ItemsSource="{Binding Projects, Mode=OneWay}">
+        <ListView Grid.Row="2" Margin="20" ItemsSource="{Binding Fields, Mode=OneWay}">
             <ListView.ItemTemplate>
                 <DataTemplate>
-                    <StackPanel Margin="5">
-                        <StackPanel Orientation="Horizontal">
-                            <TextBlock Text="Id:" Margin="0,0,5,0" />
-                            <TextBlock Text="{Binding Id}" />
-                        </StackPanel>
-                        <StackPanel Orientation="Horizontal">
-                            <TextBlock Text="Name:" Margin="0,0,5,0" />
-                            <TextBlock Text="{Binding Name}" />
-                        </StackPanel>
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="{Binding Name}" />
+                        <TextBlock Text=" (" />
+                        <TextBlock Text="{Binding Id}" />
+                        <TextBlock Text=" / " />
+                        <TextBlock Text="{Binding Required}" />
+                        <TextBlock Text=") " />
                     </StackPanel>
                 </DataTemplate>
             </ListView.ItemTemplate>

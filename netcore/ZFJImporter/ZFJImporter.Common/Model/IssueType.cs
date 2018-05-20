@@ -1,10 +1,11 @@
-﻿using System.Collections.Generic;
+﻿using Newtonsoft.Json.Linq;
+using System.Collections.Generic;
 using System.Runtime.Serialization;
 
 namespace ZFJImporter.Common.Model
 {
     [DataContract]
-    public class Project
+    public class IssueType
     {
         [DataMember(Name = "id")]
         public int Id { get; set; }
@@ -12,10 +13,9 @@ namespace ZFJImporter.Common.Model
         [DataMember(Name = "name")]
         public string Name { get; set; }
 
-        [DataMember(Name = "key")]
-        public string Key { get; set; }
+        [DataMember(Name = "fields")]
+        public JObject RawJsonFields { get; set; }
 
-        [DataMember(Name = "issuetypes")]
-        public IEnumerable<IssueType> IssueTypes { get; set; }
+        public IEnumerable<Field> Fields { get; set; }
     }
 }
